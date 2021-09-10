@@ -17,6 +17,9 @@ use crate::COSMOS_NODE_ABCI;
 use crate::ETH_NODE;
 use crate::MINER_PRIVATE_KEY;
 use crate::TOTAL_TIMEOUT;
+use json_logger::LOGGING;
+use slog::{info as sinfo};
+// use chrono;
 
 /// Ethereum keys are generated for every validator inside
 /// of this testing application and submitted to the blockchain
@@ -84,7 +87,7 @@ pub async fn deploy_contracts(
     // but neither is it really that different.
     let mut updates = Vec::new();
     for (c_key, e_key) in keys.iter() {
-        info!(
+        sinfo!(
             "Signing and submitting Delegate addresses {} for validator {}",
             e_key.to_public_key().unwrap(),
             c_key.to_public_key().unwrap().to_address(),
@@ -152,6 +155,12 @@ pub async fn deploy_contracts(
 
     info!("stdout: {}", String::from_utf8_lossy(&output.stdout));
     info!("stderr: {}", String::from_utf8_lossy(&output.stderr));
+
+    sinfo!(&LOGGING.logger, "DEPLOY_CONTRACTS";
+        "stdout" => String::from_utf8_lossy(&output.stdout),
+        "stderr" => String::from_utf8_lossy(&output.stderr),
+    );
+
     if !ExitStatus::success(&output.status) {
         panic!("Contract deploy failed!")
     }

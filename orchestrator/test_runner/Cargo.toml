@@ -15,6 +15,9 @@ cosmos_peggy = {path = "../cosmos_peggy"}
 peggy_utils = {path = "../peggy_utils"}
 peggy_proto = {path = "../peggy_proto/"}
 orchestrator = {path = "../orchestrator/"}
+json_logger = { path = "../json_logger"}
+slog = "2.5.2"
+chrono = "0.4"
 
 deep_space = "0.2"
 contact = "0.4"

@@ -19,3 +19,6 @@ ADD legacy-api-enable /
 RUN pushd /peggy/orchestrator/ && PATH=$PATH:$HOME/.cargo/bin cargo build --all --release
 RUN pushd /peggy/module/ && PATH=$PATH:/usr/local/go/bin GOPROXY=https://proxy.golang.org make && PATH=$PATH:/usr/local/go/bin make install
 RUN pushd /peggy/solidity/ && npm ci
+RUN mkdir /peggy/data
+RUN mkdir /peggy/data/json_log
+

@@ -1,4 +1,8 @@
 #!/bin/bash
+
+mkdir -p /peggy/data
+mkdir -p /peggy/data/json_logs
+
 # the script run inside the container for all-up-test.sh
 NODES=$1
 TEST_TYPE=$2
