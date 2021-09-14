@@ -27,6 +27,8 @@ use std::{process::ExitStatus, time::Instant};
 use tokio::time::delay_for;
 use tonic::transport::Channel;
 use web30::client::Web3;
+use json_logger::LOGGING;
+use slog::{info as sinfo};
 
 pub async fn happy_path_test(
     web30: &Web3,
@@ -48,6 +50,7 @@ pub async fn happy_path_test(
     #[allow(clippy::explicit_counter_loop)]
     for (c_key, e_key) in keys.iter() {
         info!("Spawning Orchestrator");
+        sinfo!(&LOGGING.logger, "SPAWNING_ORCHESTRATOR";"function" => "happy_path_test()");
         let mut grpc_client = PeggyQueryClient::connect(COSMOS_NODE_GRPC).await.unwrap();
         // we have only one actual futures executor thread (see the actix runtime tag on our main function)
         // but that will execute all the orchestrators in our test in parallel
@@ -207,6 +210,11 @@ pub async fn delegate_tokens(delegate_address: &str, amount: &str) {
     }
     info!("stdout: {}", stdout);
     info!("stderr: {}", String::from_utf8_lossy(&output.stderr));
+    sinfo!(&LOGGING.logger, "SPAWNING_ORCHESTRATOR";
+        "function" => "delegate_tokens()",
+        "stdout" => format!("stdout: {}", stdout),
+        "stderr" => format!("stderr: {}", String::from_utf8_lossy(&output.stderr)),
+    );
     if !ExitStatus::success(&output.status) {
         panic!("Delegation failed!")
     }
@@ -220,6 +228,7 @@ pub async fn wait_for_nonzero_valset(web30: &Web3, peggy_address: EthAddress) {
 
     while 0 == current_eth_valset_nonce {
         info!("Validator set is not yet updated to 0>, waiting",);
+        sinfo!(&LOGGING.logger, "VALIDATOR_SET_IS_NOT_YET_UPDATED";"function" => "wait_for_nonzero_valset()");
         current_eth_valset_nonce = get_valset_nonce(peggy_address, *MINER_ADDRESS, &web30)
             .await
             .expect("Failed to get current eth valset");
@@ -245,6 +254,7 @@ pub async fn test_valset_update(
     // now we send a valset request that the orchestrators will pick up on
     // in this case we send it as the first validator because they can pay the fee
     info!("Sending in valset request");
+    sinfo!(&LOGGING.logger, "SENDING_IN_VALSET_REQUEST";"function" => "test_valset_update()");
 
     // this is hacky and not really a good way to test validator set updates in a highly
     // repeatable fashion. What we really need to do is be aware of the total staking state
@@ -266,6 +276,11 @@ pub async fn test_valset_update(
         "Delegating {} to {} in order to generate a validator set update",
         amount, delegate_address
     );
+    sinfo!(&LOGGING.logger, "DELEGATING";
+        "function" => "test_valset_update()",
+        "amount"  => format!("{}",amount),
+        "delegate_address"=> format!("{}",delegate_address),
+    );
     delegate_tokens(delegate_address, amount).await;
 
     let mut current_eth_valset_nonce = get_valset_nonce(peggy_address, *MINER_ADDRESS, &web30)
@@ -277,6 +292,10 @@ pub async fn test_valset_update(
             "Validator set is not yet updated to {}>, waiting",
             starting_eth_valset_nonce
         );
+        sinfo!(&LOGGING.logger, "VALIDATOR_SET_IS_NOT_YET_UPDATED";
+            "function" => "test_valset_update()",
+            "starting_eth_valset_nonce" => format!("{}",starting_eth_valset_nonce),
+        );
         current_eth_valset_nonce = get_valset_nonce(peggy_address, *MINER_ADDRESS, &web30)
             .await
             .expect("Failed to get current eth valset");
@@ -287,6 +306,7 @@ pub async fn test_valset_update(
     }
     assert!(starting_eth_valset_nonce != current_eth_valset_nonce);
     info!("Validator set successfully updated!");
+    sinfo!(&LOGGING.logger, "VALIDATOR_SET_SUCCESSFULLY_UPDATED";"function" => "test_valset_update()");
 }
 
 /// this function tests Ethereum -> Cosmos
@@ -303,6 +323,12 @@ async fn test_erc20_deposit(
         "Sending to Cosmos from {} to {} with amount {}",
         *MINER_ADDRESS, dest, amount
     );
+    sinfo!(&LOGGING.logger, "SENDING_TO_COSMOS";
+        "function" => "test_erc20_deposit()",
+        "from" => format!("{}",*MINER_ADDRESS),
+        "to" => format!("{}",dest),
+        "amount" => format!("{}",amount),
+    );
     // we send some erc20 tokens to the peggy contract to register a deposit
     let tx_id = send_to_cosmos(
         erc20_address,
@@ -317,6 +343,10 @@ async fn test_erc20_deposit(
     .await
     .expect("Failed to send tokens to Cosmos");
     info!("Send to Cosmos txid: {:#066x}", tx_id);
+    sinfo!(&LOGGING.logger, "SEND_TO_COSMOS";
+        "function" => "test_erc20_deposit()",
+        "tx_id" => format!("{:#066x}", tx_id),
+    );
 
     let start = Instant::now();
     while Instant::now() - start < TOTAL_TIMEOUT {
@@ -332,6 +362,13 @@ async fn test_erc20_deposit(
                         "Successfully bridged ERC20 {}{} to Cosmos! Balance is now {}{}",
                         amount, start_coin.denom, end_coin.amount, end_coin.denom
                     );
+                    sinfo!(&LOGGING.logger, "SUCCESSFULLY_BRIDGED_ERC20_TO_COSMOS";
+                        "function" => "test_erc20_deposit()",
+                        "amount" => format!("{}",amount),
+                        "start_coin_denom" => format!("{}", start_coin.denom),
+                        "end_coin_amount" => format!("{}", end_coin.amount),
+                        "end_coin_denom" => format!("{}", end_coin.denom),
+                    );
                     return;
                 }
             }
@@ -341,6 +378,11 @@ async fn test_erc20_deposit(
                         "Successfully bridged ERC20 {}{} to Cosmos! Balance is now {}{}",
                         amount, end_coin.denom, end_coin.amount, end_coin.denom
                     );
+                    sinfo!(&LOGGING.logger, "SUCCESSFULLY_BRIDGED_ERC20_TO_COSMOS";
+                        "function" => "test_erc20_deposit()",
+                        "amount" => format!("{}",amount),
+                        "end_coin_denom" => format!("{}", end_coin.denom),
+                    );
                     return;
                 } else {
                     panic!("Failed to bridge ERC20!")
@@ -349,6 +391,7 @@ async fn test_erc20_deposit(
             _ => {}
         }
         info!("Waiting for ERC20 deposit");
+        sinfo!(&LOGGING.logger, "WAITING_FOR_ERC20_DEPOSIT";"function" => "test_erc20_deposit()");
         wait_for_next_cosmos_block(contact, TOTAL_TIMEOUT).await;
     }
     panic!("Failed to bridge ERC20!")
@@ -384,6 +427,12 @@ async fn test_batch(
         "Sending {}{} from {} on Cosmos back to Ethereum",
         amount, token_name, dest_cosmos_address
     );
+    sinfo!(&LOGGING.logger, "SENDING_TOKEN";
+        "function" => "test_batch()",
+        "amount" => format!("{}",amount),
+        "token_name" => format!("{}", token_name),
+        "dest_cosmos_address" => format!("{}", dest_cosmos_address),
+    );
     let res = send_to_eth(
         dest_cosmos_private_key,
         dest_eth_address,
@@ -397,8 +446,13 @@ async fn test_batch(
     .await
     .unwrap();
     info!("Sent tokens to Ethereum with {:?}", res);
+    sinfo!(&LOGGING.logger, "SENT_TOKENS_TO_ETHEREUM";
+        "function" => "test_batch()",
+        "res" => format!("{:?}",res),
+    );
 
     info!("Requesting transaction batch");
+    sinfo!(&LOGGING.logger, "REQUESTING_TRANSACTION_BATCH";"function" => "test_batch()");
     send_request_batch(
         requester_cosmos_private_key,
         token_name.clone(),
@@ -428,6 +482,10 @@ async fn test_batch(
         info!(
             "Batch is not yet submitted {}>, waiting",
             starting_batch_nonce
+        );
+        sinfo!(&LOGGING.logger, "BATCH_IS_NOT_YET_SUBMITTED";
+            "function" => "test_erc20_deposit()",
+            "starting_batch_nonce" => format!("{}",starting_batch_nonce),
         );
         current_eth_batch_nonce =
             get_tx_batch_nonce(peggy_address, erc20_contract, *MINER_ADDRESS, &web30)
@@ -467,6 +525,12 @@ async fn test_batch(
     info!(
         "Successfully updated txbatch nonce to {} and sent {}{} tokens to Ethereum!",
         current_eth_batch_nonce, amount, token_name
+    );
+    sinfo!(&LOGGING.logger, "SUCCESSFULLY_UPDATED_TXBATCH";
+        "function" => "test_batch()",
+        "current_eth_batch_nonce" => format!("{}",current_eth_batch_nonce),
+        "amount" => format!("{}", amount),
+        "token_name" => format!("{}", token_name),
     );
 }
 
@@ -517,6 +581,7 @@ async fn submit_duplicate_erc20_send(
     if let Some(end_coin) = check_cosmos_balance("peggy", receiver, &contact).await {
         if start_coin.amount == end_coin.amount && start_coin.denom == end_coin.denom {
             info!("Successfully failed to duplicate ERC20!");
+            sinfo!(&LOGGING.logger, "SUCCESSFULLY_FAILED_TO_DUPLICATE_ERC20!";"function" => "submit_duplicate_erc20_send()");
         } else {
             panic!("Duplicated ERC20!")
         }
