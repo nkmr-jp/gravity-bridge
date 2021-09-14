@@ -30,6 +30,8 @@ mod happy_path_v2;
 mod transaction_stress_test;
 mod utils;
 mod valset_stress;
+use json_logger::LOGGING;
+use slog::{info as sinfo};
 
 /// the timeout for individual requests
 const OPERATION_TIMEOUT: Duration = Duration::from_secs(30);
@@ -97,9 +99,11 @@ pub fn should_deploy_contracts() -> bool {
 pub async fn main() {
     env_logger::init();
     info!("Staring Peggy test-runner");
+    sinfo!(&LOGGING.logger, "STARING_PEGGY_TEST_RUNNER";"function" => "main()");
     let contact = Contact::new(COSMOS_NODE, OPERATION_TIMEOUT);
 
     info!("Waiting for Cosmos chain to come online");
+    sinfo!(&LOGGING.logger, "WAITING_FOR_COSMOS_CHAIN_TO_COME_ONLINE";"function" => "main()");
     wait_for_cosmos_online(&contact, TOTAL_TIMEOUT).await;
 
     let grpc_client = PeggyQueryClient::connect(COSMOS_NODE_GRPC).await.unwrap();
@@ -109,6 +113,10 @@ pub async fn main() {
     // if we detect this env var we are only deploying contracts, do that then exit.
     if should_deploy_contracts() {
         info!("test-runner in contract deploying mode, deploying contracts, then exiting");
+        sinfo!(&LOGGING.logger,
+            "DEPLOY_CONTRACT";
+            "function" => "main()",
+        );
         deploy_contracts(&contact, &keys, get_fee()).await;
         return;
     }
@@ -141,9 +149,14 @@ pub async fn main() {
     //                 is created and deployed vai the bridge.
     let test_type = env::var("TEST_TYPE");
     info!("Starting tests with {:?}", test_type);
+    sinfo!(&LOGGING.logger, "TEST_TYPE";
+        "test_type" => format!("{:?}",test_type),
+        "function" => "main()",
+    );
     if let Ok(test_type) = test_type {
         if test_type == "VALIDATOR_OUT" {
             info!("Starting Validator out test");
+            sinfo!(&LOGGING.logger, "STARTING_VALIDATOR_OUT_TEST";"function" => "main()");
             happy_path_test(
                 &web30,
                 grpc_client,
@@ -173,7 +186,8 @@ pub async fn main() {
             return;
         }
     }
-    info!("Starting Happy path test");
+    // info!("Starting Happy path test");
+    sinfo!(&LOGGING.logger, "STARTING_HAPPY_PATH_TEST";"function" => "main()");
     happy_path_test(
         &web30,
         grpc_client,

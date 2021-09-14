@@ -87,11 +87,11 @@ pub async fn deploy_contracts(
     // but neither is it really that different.
     let mut updates = Vec::new();
     for (c_key, e_key) in keys.iter() {
-        // info!(
-        //     "Signing and submitting Delegate addresses {} for validator {}",
-        //     e_key.to_public_key().unwrap(),
-        //     c_key.to_public_key().unwrap().to_address(),
-        // );
+        info!(
+            "Signing and submitting Delegate addresses {} for validator {}",
+            e_key.to_public_key().unwrap(),
+            c_key.to_public_key().unwrap().to_address(),
+        );
         sinfo!(&LOGGING.logger, "SIGNING_AND_SUBMITTING";
             "e_key" => format!("{}", e_key.to_public_key().unwrap()),
             "c_key_to_address" => format!("{}", c_key.to_public_key().unwrap().to_address()),
@@ -157,10 +157,11 @@ pub async fn deploy_contracts(
         panic!("Could not find Peggy.json contract artifact in any known location!")
     };
 
-    // info!("stdout: {}", String::from_utf8_lossy(&output.stdout));
-    // info!("stderr: {}", String::from_utf8_lossy(&output.stderr));
+    info!("stdout: {}", String::from_utf8_lossy(&output.stdout));
+    info!("stderr: {}", String::from_utf8_lossy(&output.stderr));
 
     sinfo!(&LOGGING.logger, "DEPLOY_CONTRACTS";
+        "function" => "deploy_contracts()",
         "stdout" => format!("{}", String::from_utf8_lossy(&output.stdout)),
         "stderr" => format!("{}", String::from_utf8_lossy(&output.stderr)),
     );
