@@ -23,9 +23,9 @@ set -u
 
 # Run new test container instance
 
-mkdir -p data
+mkdir -p $(pwd)/data
 docker run \
-  -v data:/peggy/data \
+  -v $(pwd)/data/container:/peggy/data \
   --name peggy_all_up_test_instance \
   --cap-add=NET_ADMIN \
   -t peggy-base /bin/bash /peggy/tests/container-scripts/all-up-test-internal.sh \

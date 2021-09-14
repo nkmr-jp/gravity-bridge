@@ -2,6 +2,7 @@ use once_cell::sync::Lazy;
 use slog::{PushFnValue, *};
 use std::fs::OpenOptions;
 use std::sync::Mutex;
+use chrono;
 
 // refs: https://rust.graystorm.com/tag/crate-slog/
 // refs: https://github.com/slog-rs/slog/issues/123
@@ -13,7 +14,10 @@ pub struct Logging {
 
 pub static LOGGING: Lazy<Logging> = Lazy::new(|| {
     let pid=std::process::id().to_string();
-    let logfile = format!("/peggy/data/json_log/app-{}.log", pid);
+    let ts = chrono::Local::now().timestamp();
+
+    // let logfile = format!("./app-{}-{}.log", ts, pid);
+    let logfile = format!("/peggy/data/json_log/app-{}-{}.log", ts, pid);
     let file = OpenOptions::new()
         .create(true)
         .write(true)
@@ -34,7 +38,7 @@ pub static LOGGING: Lazy<Logging> = Lazy::new(|| {
         ser.emit(format_args!("{}", r.module()))
     });
     let location = PushFnValue(|r: &Record, ser: PushFnValueSerializer| {
-        ser.emit(format_args!("https://github.com/nkmr-jp/gravity-bridge/blob/mylog/{}#L{}", r.file(), r.line()))
+        ser.emit(format_args!("https://github.com/nkmr-jp/gravity-bridge/blob/mylog/orchestrator/{}#L{}", r.file(), r.line()))
     });
 
     let applogger = Logger::root(
@@ -47,8 +51,10 @@ pub static LOGGING: Lazy<Logging> = Lazy::new(|| {
 
 #[cfg(test)]
 mod tests {
+    use json_logger::LOGGING;
+    use slog::{info as sinfo};
     #[test]
     fn it_works() {
-        assert_eq!(2 + 2, 4);
+        sinfo!(&LOGGING.logger, "DEPLOY_CONTRACTS");
     }
 }

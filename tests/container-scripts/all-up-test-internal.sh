@@ -1,7 +1,7 @@
 #!/bin/bash
 
 mkdir -p /peggy/data
-mkdir -p /peggy/data/json_logs
+mkdir -p /peggy/data/json_log
 
 # the script run inside the container for all-up-test.sh
 NODES=$1

@@ -87,10 +87,14 @@ pub async fn deploy_contracts(
     // but neither is it really that different.
     let mut updates = Vec::new();
     for (c_key, e_key) in keys.iter() {
-        sinfo!(
-            "Signing and submitting Delegate addresses {} for validator {}",
-            e_key.to_public_key().unwrap(),
-            c_key.to_public_key().unwrap().to_address(),
+        // info!(
+        //     "Signing and submitting Delegate addresses {} for validator {}",
+        //     e_key.to_public_key().unwrap(),
+        //     c_key.to_public_key().unwrap().to_address(),
+        // );
+        sinfo!(&LOGGING.logger, "SIGNING_AND_SUBMITTING";
+            "e_key" => format!("{}", e_key.to_public_key().unwrap()),
+            "c_key_to_address" => format!("{}", c_key.to_public_key().unwrap().to_address()),
         );
         updates.push(update_peggy_delegate_addresses(
             &contact,
@@ -153,12 +157,12 @@ pub async fn deploy_contracts(
         panic!("Could not find Peggy.json contract artifact in any known location!")
     };
 
-    info!("stdout: {}", String::from_utf8_lossy(&output.stdout));
-    info!("stderr: {}", String::from_utf8_lossy(&output.stderr));
+    // info!("stdout: {}", String::from_utf8_lossy(&output.stdout));
+    // info!("stderr: {}", String::from_utf8_lossy(&output.stderr));
 
     sinfo!(&LOGGING.logger, "DEPLOY_CONTRACTS";
-        "stdout" => String::from_utf8_lossy(&output.stdout),
-        "stderr" => String::from_utf8_lossy(&output.stderr),
+        "stdout" => format!("{}", String::from_utf8_lossy(&output.stdout)),
+        "stderr" => format!("{}", String::from_utf8_lossy(&output.stderr)),
     );
 
     if !ExitStatus::success(&output.status) {
@@ -222,3 +226,13 @@ fn return_existing<'a>(a: [&'a str; 2], b: [&'a str; 2]) -> [&'a str; 2] {
         panic!("No paths exist!")
     }
 }
+
+// #[cfg(test)]
+// mod tests {
+//     use json_logger::LOGGING;
+//     use slog::{info as sinfo};
+//     #[test]
+//     fn it_works() {
+//         sinfo!(&LOGGING.logger, "TEST");
+//     }
+// }

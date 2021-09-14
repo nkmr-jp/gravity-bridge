@@ -13,3 +13,5 @@ orchestrator/bins
 cache
 artifacts
 *.test
+
+data
