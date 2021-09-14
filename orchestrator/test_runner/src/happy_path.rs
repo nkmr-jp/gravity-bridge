@@ -210,7 +210,7 @@ pub async fn delegate_tokens(delegate_address: &str, amount: &str) {
     }
     info!("stdout: {}", stdout);
     info!("stderr: {}", String::from_utf8_lossy(&output.stderr));
-    sinfo!(&LOGGING.logger, "SPAWNING_ORCHESTRATOR";
+    sinfo!(&LOGGING.logger, "DELEGATE_TOKENS";
         "function" => "delegate_tokens()",
         "stdout" => format!("stdout: {}", stdout),
         "stderr" => format!("stderr: {}", String::from_utf8_lossy(&output.stderr)),
@@ -325,8 +325,8 @@ async fn test_erc20_deposit(
     );
     sinfo!(&LOGGING.logger, "SENDING_TO_COSMOS";
         "function" => "test_erc20_deposit()",
-        "from" => format!("{}",*MINER_ADDRESS),
-        "to" => format!("{}",dest),
+        "miner_address" => format!("{}",*MINER_ADDRESS),
+        "dest" => format!("{}",dest),
         "amount" => format!("{}",amount),
     );
     // we send some erc20 tokens to the peggy contract to register a deposit
@@ -382,6 +382,7 @@ async fn test_erc20_deposit(
                         "function" => "test_erc20_deposit()",
                         "amount" => format!("{}",amount),
                         "end_coin_denom" => format!("{}", end_coin.denom),
+                        "end_coin_amount" => format!("{}", end_coin.amount),
                     );
                     return;
                 } else {
@@ -581,7 +582,7 @@ async fn submit_duplicate_erc20_send(
     if let Some(end_coin) = check_cosmos_balance("peggy", receiver, &contact).await {
         if start_coin.amount == end_coin.amount && start_coin.denom == end_coin.denom {
             info!("Successfully failed to duplicate ERC20!");
-            sinfo!(&LOGGING.logger, "SUCCESSFULLY_FAILED_TO_DUPLICATE_ERC20!";"function" => "submit_duplicate_erc20_send()");
+            sinfo!(&LOGGING.logger, "SUCCESSFULLY_FAILED_TO_DUPLICATE_ERC20";"function" => "submit_duplicate_erc20_send()");
         } else {
             panic!("Duplicated ERC20!")
         }
