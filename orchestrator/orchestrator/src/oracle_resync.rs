@@ -8,6 +8,8 @@ use peggy_utils::types::{
 use tokio::time::delay_for;
 use tonic::transport::Channel;
 use web30::client::Web3;
+use json_logger::LOGGING;
+use slog::{info as sinfo};
 
 use crate::get_with_retry::get_block_number_with_retry;
 use crate::get_with_retry::get_last_event_nonce_with_retry;
@@ -43,6 +45,11 @@ pub async fn get_last_checked_block(
         info!(
             "Oracle is resyncing, looking back into the history to find our last event nonce {}, on block {}",
             last_event_nonce, current_block
+        );
+        sinfo!(&LOGGING.logger, "SUCCESSFULLY_BRIDGED_ERC20_TO_COSMOS";
+            "function" => "get_last_checked_block()",
+            "last_event_nonce" => format!("{}",last_event_nonce),
+            "current_block" => format!("{}", current_block),
         );
         let end_search = if current_block.clone() < BLOCKS_TO_SEARCH.into() {
             0u8.into()

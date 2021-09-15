@@ -16,7 +16,7 @@ ADD peggy.tar.gz /
 # this config file allows enablement of the legacy Amino api
 ADD legacy-api-enable /
 # build steps for all codebases in this repo, must be below the add statement
-RUN pushd /peggy/orchestrator/ && PATH=$PATH:$HOME/.cargo/bin cargo build --all --release
+RUN pushd /peggy/orchestrator/ && PATH=$PATH:$HOME/.cargo/bin cargo build --all
 RUN pushd /peggy/module/ && PATH=$PATH:/usr/local/go/bin GOPROXY=https://proxy.golang.org make && PATH=$PATH:/usr/local/go/bin make install
 RUN pushd /peggy/solidity/ && npm ci
 RUN mkdir /peggy/data

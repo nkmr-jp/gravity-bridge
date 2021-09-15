@@ -1671,6 +1671,7 @@ name = "orchestrator"
 version = "0.4.1"
 dependencies = [
  "actix-rt",
+ "chrono",
  "clarity",
  "contact",
  "cosmos_peggy",
@@ -1679,6 +1680,7 @@ dependencies = [
  "env_logger",
  "ethereum_peggy",
  "futures",
+ "json_logger",
  "lazy_static",
  "log",
  "num256",
@@ -1691,6 +1693,7 @@ dependencies = [
  "serde",
  "serde_derive",
  "serde_json",
+ "slog",
  "tokio",
  "tonic",
  "web30",

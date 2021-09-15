@@ -23,6 +23,8 @@ use std::time::Instant;
 use tokio::time::delay_for;
 use tonic::transport::Channel;
 use web30::client::Web3;
+use json_logger::LOGGING;
+use slog::{info as sinfo};
 
 /// The execution speed governing all loops in this file
 /// which is to say all loops started by Orchestrator main
@@ -95,6 +97,7 @@ pub async fn eth_oracle_main_loop(
     )
     .await;
     info!("Oracle resync complete, Oracle now operational");
+    sinfo!(&LOGGING.logger, "ORACLE_RESYNC_COMPLETE_ORACLE_NOW_OPERATIONAL";"function" => "eth_oracle_main_loop()");
     let mut grpc_client = grpc_client;
 
     loop {
@@ -190,6 +193,11 @@ pub async fn eth_signer_main_loop(
                         valsets.len(),
                         valsets[0].nonce
                     );
+                    sinfo!(&LOGGING.logger, "SENDING_VALSET";
+                        "function" => "eth_signer_main_loop()",
+                        "valsets_len" => format!("{}",valsets.len()),
+                        "valsets_nonce" => format!("{}",valsets[0].nonce),
+                    );
                     let res = send_valset_confirms(
                         &contact,
                         ethereum_key,
@@ -217,6 +225,13 @@ pub async fn eth_signer_main_loop(
                     last_unsigned_batch.nonce,
                     last_unsigned_batch.total_fee.amount
                 );
+                sinfo!(&LOGGING.logger, "SENDING_BATCH_CONFIRM";
+                    "function" => "eth_signer_main_loop()",
+                    "token_contract" => format!("{}",last_unsigned_batch.token_contract),
+                    "nonce" => format!("{}",last_unsigned_batch.nonce),
+                    "total_fee_amount" => format!("{}",last_unsigned_batch.total_fee.amount),
+                );
+
                 let res = send_batch_confirm(
                     &contact,
                     ethereum_key,
@@ -241,6 +256,11 @@ pub async fn eth_signer_main_loop(
                     "Sending Logic call confirm for {}:{}",
                     bytes_to_hex_str(&last_unsigned_call.invalidation_id),
                     last_unsigned_call.invalidation_nonce
+                );
+                sinfo!(&LOGGING.logger, "SENDING_LOGIC_CALL";
+                    "function" => "eth_signer_main_loop()",
+                    "invalidation_id" => format!("{}",bytes_to_hex_str(&last_unsigned_call.invalidation_id)),
+                    "invalidation_nonce" => format!("{}",last_unsigned_call.invalidation_nonce),
                 );
                 let res = send_logic_call_confirm(
                     &contact,
