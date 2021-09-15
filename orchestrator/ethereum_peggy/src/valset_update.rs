@@ -7,6 +7,7 @@ use std::{cmp::min, time::Duration};
 use web30::{client::Web3, types::TransactionRequest};
 use json_logger::LOGGING;
 use slog::{info as sinfo};
+use slog::{error as serror};
 
 /// this function generates an appropriate Ethereum transaction
 /// to submit the provided validator set and signatures.
@@ -72,7 +73,12 @@ pub async fn send_eth_valset_update(
     if last_nonce != new_nonce {
         error!(
             "Current nonce is {} expected to update to nonce {}",
-            last_nonce, new_nonce
+            last_nonce.clone(), new_nonce.clone()
+        );
+        serror!(&LOGGING.logger, "CURRENT_NONCE_IS_FAILED";
+            "function" => "send_eth_valset_update()",
+            "last_nonce" => format!("{}",last_nonce),
+            "new_nonce" => format!("{}",new_nonce),
         );
     } else {
         info!(

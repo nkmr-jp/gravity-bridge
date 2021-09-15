@@ -33,6 +33,9 @@ env_logger = "0.8"
 tokio = "0.2"
 tonic = "0.3"
 openssl-probe = "0.1"
+json_logger = { path = "../json_logger"}
+slog = "2.5.2"
+chrono = "0.4"
 
 
 [dev-dependencies]

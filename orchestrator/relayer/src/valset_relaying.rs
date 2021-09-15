@@ -12,6 +12,9 @@ use peggy_proto::peggy::query_client::QueryClient as PeggyQueryClient;
 use peggy_utils::{message_signatures::encode_valset_confirm_hashed, types::Valset};
 use tonic::transport::Channel;
 use web30::client::Web3;
+use json_logger::LOGGING;
+use slog::{info as sinfo};
+use slog::{error as serror};
 
 /// Check the last validator set on Ethereum, if it's lower than our latest validator
 /// set then we should package and submit the update as an Ethereum transaction
@@ -84,6 +87,7 @@ pub async fn relay_valsets(
 
     if latest_confirmed.is_none() {
         error!("We don't have a latest confirmed valset?");
+        serror!(&LOGGING.logger, "WE_DONT_HAVE_A_LATEST_CONFIRMED_VALSET";"function" => "relay_valsets()");
         return;
     }
     // the latest cosmos validator set that it is possible to submit given the constraints
@@ -116,6 +120,11 @@ pub async fn relay_valsets(
                 "Valset cost estimate for Nonce {} failed with {:?}",
                 latest_cosmos_valset.nonce, cost
             );
+            serror!(&LOGGING.logger, "VALSET_COST_ESTIMATE_FAILED";
+                "function" => "relay_valsets()",
+                "latest_cosmos_valset_nonce" => format!("{}",latest_cosmos_valset.nonce),
+                "cost" => format!("{:?}",cost),
+            );
             return;
         }
         let cost = cost.unwrap();
@@ -126,6 +135,14 @@ pub async fn relay_valsets(
             cost.gas_price.clone(),
             downcast_to_u128(cost.get_total()).unwrap() as f32
                 / downcast_to_u128(one_eth()).unwrap() as f32
+        );
+        sinfo!(&LOGGING.logger, "WE_HAVE_DETECTED_LATEST_VALSET";
+            "function" => "relay_valsets()",
+            "latest_cosmos_valset_nonce" => format!("{}",latest_cosmos_valset.nonce),
+            "current_valset_nonce" => format!("{}",current_valset.nonce),
+            "cost_gas_price" => format!("{}",cost.gas_price.clone()),
+            "per_eth" => format!("{:.4}",downcast_to_u128(cost.get_total()).unwrap() as f32
+                / downcast_to_u128(one_eth()).unwrap() as f32),
         );
 
         let _res = send_eth_valset_update(

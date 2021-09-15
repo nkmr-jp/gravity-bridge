@@ -2140,6 +2140,7 @@ version = "0.4.1"
 dependencies = [
  "actix",
  "actix-rt",
+ "chrono",
  "clarity",
  "contact",
  "cosmos_peggy",
@@ -2147,6 +2148,7 @@ dependencies = [
  "docopt",
  "env_logger",
  "ethereum_peggy",
+ "json_logger",
  "lazy_static",
  "log",
  "num256",
@@ -2155,6 +2157,7 @@ dependencies = [
  "peggy_utils",
  "serde",
  "serde_derive",
+ "slog",
  "tokio",
  "tonic",
  "web30",
