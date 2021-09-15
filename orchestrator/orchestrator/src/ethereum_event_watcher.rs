@@ -16,6 +16,8 @@ use peggy_utils::{
 use tonic::transport::Channel;
 use web30::client::Web3;
 use web30::jsonrpc::error::Web3Error;
+use json_logger::LOGGING;
+use slog::{info as sinfo};
 
 use crate::get_with_retry::get_block_number_with_retry;
 use crate::get_with_retry::get_net_version_with_retry;
@@ -119,19 +121,39 @@ pub async fn check_for_events(
             info!(
                 "Oracle observed deposit with sender {}, destination {}, amount {}, and event nonce {}",
                 deposits[0].sender, deposits[0].destination, deposits[0].amount, deposits[0].event_nonce
-            )
+            );
+            sinfo!(&LOGGING.logger, "ORACLE_OBSERVED_DEPOSIT";
+                "function" => "check_for_events()",
+                "last_nonce" => format!("{}",deposits[0].sender),
+                "destination" => format!("{}",deposits[0].destination),
+                "amount" => format!("{}",deposits[0].amount),
+                "event_nonce" => format!("{}",deposits[0].event_nonce),
+            );
         }
         if !withdraws.is_empty() {
             info!(
                 "Oracle observed batch with nonce {}, contract {}, and event nonce {}",
                 withdraws[0].batch_nonce, withdraws[0].erc20, withdraws[0].event_nonce
-            )
+            );
+            sinfo!(&LOGGING.logger, "ORACLE_OBSERVED_BATCH";
+                "function" => "check_for_events()",
+                "batch_nonce" => format!("{}",withdraws[0].batch_nonce),
+                "erc20" => format!("{}",withdraws[0].erc20),
+                "event_nonce" => format!("{}",withdraws[0].event_nonce),
+            );
         }
         if !erc20_deploys.is_empty() {
             info!(
                 "Oracle observed ERC20 deployment with denom {} erc20 name {} and symbol {} and event nonce {}",
                 erc20_deploys[0].cosmos_denom, erc20_deploys[0].name, erc20_deploys[0].symbol, erc20_deploys[0].event_nonce,
-            )
+            );
+            sinfo!(&LOGGING.logger, "ORACLE_OBSERVED_ERC20_DEPLOYMENT";
+                "function" => "check_for_events()",
+                "cosmos_denom" => format!("{}",erc20_deploys[0].cosmos_denom),
+                "name" => format!("{}",erc20_deploys[0].name),
+                "symbol" => format!("{}",erc20_deploys[0].symbol),
+                "event_nonce" => format!("{}",erc20_deploys[0].event_nonce),
+            );
         }
         if !logic_calls.is_empty() {
             info!(
@@ -139,7 +161,13 @@ pub async fn check_for_events(
                 bytes_to_hex_str(&logic_calls[0].invalidation_id),
                 logic_calls[0].invalidation_nonce,
                 logic_calls[0].event_nonce
-            )
+            );
+            sinfo!(&LOGGING.logger, "ORACLE_OBSERVED_LOGIC_CALL_EXECUTION";
+                "function" => "check_for_events()",
+                "invalidation_id" => format!("{}",bytes_to_hex_str(&logic_calls[0].invalidation_id)),
+                "invalidation_nonce" => format!("{}",logic_calls[0].invalidation_nonce),
+                "event_nonce" => format!("{}",logic_calls[0].event_nonce),
+            );
         }
 
         if !deposits.is_empty()
@@ -167,6 +195,10 @@ pub async fn check_for_events(
                 ));
             } else {
                 info!("Claims processed, new nonce {}", new_event_nonce);
+                sinfo!(&LOGGING.logger, "CLAIMS_PROCESSED";
+                    "function" => "check_for_events()",
+                    "new_event_nonce" => format!("{}",new_event_nonce),
+                );
             }
         }
         Ok(latest_block)
