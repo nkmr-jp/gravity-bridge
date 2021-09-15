@@ -11,6 +11,8 @@ use web30::{client::Web3, types::SendTxOption};
 use crate::TOTAL_TIMEOUT;
 use crate::{one_eth, MINER_PRIVATE_KEY};
 use crate::{MINER_ADDRESS, OPERATION_TIMEOUT};
+use json_logger::LOGGING;
+use slog::{info as sinfo};
 
 /// This overly complex function primarily exists to parallelize the sending of Eth to the
 /// orchestrators, waiting for these there transactions takes up nearly a minute of test time
@@ -24,6 +26,10 @@ pub async fn send_eth_to_orchestrators(keys: &[(CosmosPrivateKey, EthPrivateKey)
     info!(
         "Sending orchestrators 100 eth to pay for fees miner has {} ETH",
         balance / one_eth()
+    );
+    sinfo!(&LOGGING.logger, "SENDING_ORCHESTRATORS_100_ETH_TO_PAY";
+        "function" => "send_eth_to_orchestrators()",
+        "balance" => format!("{}",balance / one_eth())
     );
     let mut eth_addresses = Vec::new();
     for (_, e_key) in keys {

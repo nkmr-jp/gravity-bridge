@@ -212,8 +212,8 @@ pub async fn delegate_tokens(delegate_address: &str, amount: &str) {
     info!("stderr: {}", String::from_utf8_lossy(&output.stderr));
     sinfo!(&LOGGING.logger, "DELEGATE_TOKENS";
         "function" => "delegate_tokens()",
-        "stdout" => format!("stdout: {}", stdout),
-        "stderr" => format!("stderr: {}", String::from_utf8_lossy(&output.stderr)),
+        "stdout" => format!("{}", stdout),
+        "stderr" => format!("{}", String::from_utf8_lossy(&output.stderr)),
     );
     if !ExitStatus::success(&output.status) {
         panic!("Delegation failed!")
