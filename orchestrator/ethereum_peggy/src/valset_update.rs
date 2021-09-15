@@ -5,6 +5,8 @@ use peggy_utils::types::*;
 use peggy_utils::{error::PeggyError, message_signatures::encode_valset_confirm_hashed};
 use std::{cmp::min, time::Duration};
 use web30::{client::Web3, types::TransactionRequest};
+use json_logger::LOGGING;
+use slog::{info as sinfo};
 
 /// this function generates an appropriate Ethereum transaction
 /// to submit the provided validator set and signatures.
@@ -25,13 +27,23 @@ pub async fn send_eth_valset_update(
     let eth_address = our_eth_key.to_public_key().unwrap();
     info!(
         "Ordering signatures and submitting validator set {} -> {} update to Ethereum",
-        old_nonce, new_nonce
+        old_nonce.clone(), new_nonce.clone()
     );
+    sinfo!(&LOGGING.logger, "ORDERING_SIGNATURES_AND_SUBMITTING_VALIDATOR";
+        "function" => "send_eth_valset_update()",
+        "old_nonce" => format!("{}",old_nonce),
+        "new_nonce" => format!("{}",new_nonce),
+    );
+
     let before_nonce = get_valset_nonce(peggy_contract_address, eth_address, web3).await?;
     if before_nonce != old_nonce {
         info!(
             "Someone else updated the valset to {}, exiting early",
-            before_nonce
+            before_nonce.clone()
+        );
+        sinfo!(&LOGGING.logger, "SOMEONE_ELSE_UPDATED_THE_VALSET";
+            "function" => "send_eth_valset_update()",
+            "before_nonce" => format!("{}",before_nonce),
         );
         return Ok(());
     }
@@ -49,6 +61,10 @@ pub async fn send_eth_valset_update(
         )
         .await?;
     info!("Sent valset update with txid {:#066x}", tx);
+    sinfo!(&LOGGING.logger, "SENT_VALSET_UPDATE_WITH_TXI";
+        "function" => "send_eth_valset_update()",
+        "tx" => format!("{:#066x}",tx),
+    );
 
     web3.wait_for_transaction(tx, timeout, None).await?;
 
@@ -61,7 +77,11 @@ pub async fn send_eth_valset_update(
     } else {
         info!(
             "Successfully updated Valset with new Nonce {:?}",
-            last_nonce
+            last_nonce.clone()
+        );
+        sinfo!(&LOGGING.logger, "SUCCESSFULLY_UPDATED_VALSET_WITH_NEW_NONCE";
+            "function" => "send_eth_valset_update()",
+            "last_nonce" => format!("{:?}",last_nonce),
         );
     }
     Ok(())

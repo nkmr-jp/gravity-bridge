@@ -853,12 +853,15 @@ dependencies = [
 name = "ethereum_peggy"
 version = "0.1.0"
 dependencies = [
+ "chrono",
  "clarity",
  "deep_space",
+ "json_logger",
  "log",
  "num256",
  "peggy_utils",
  "sha3",
+ "slog",
  "web30",
 ]
 
