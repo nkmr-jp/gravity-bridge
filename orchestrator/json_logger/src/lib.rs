@@ -48,13 +48,3 @@ pub static LOGGING: Lazy<Logging> = Lazy::new(|| {
     println!("json_logger initialized");
     Logging { logger: applogger }
 });
-
-#[cfg(test)]
-mod tests {
-    use json_logger::LOGGING;
-    use slog::{info as sinfo};
-    #[test]
-    fn it_works() {
-        sinfo!(&LOGGING.logger, "DEPLOY_CONTRACTS");
-    }
-}

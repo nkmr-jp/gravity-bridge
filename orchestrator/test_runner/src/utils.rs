@@ -25,11 +25,11 @@ pub async fn send_eth_to_orchestrators(keys: &[(CosmosPrivateKey, EthPrivateKey)
     let balance = web30.eth_get_balance(*MINER_ADDRESS).await.unwrap();
     info!(
         "Sending orchestrators 100 eth to pay for fees miner has {} ETH",
-        balance / one_eth()
+        balance.clone() / one_eth()
     );
     sinfo!(&LOGGING.logger, "SENDING_ORCHESTRATORS_100_ETH_TO_PAY";
         "function" => "send_eth_to_orchestrators()",
-        "balance" => format!("{}",balance / one_eth())
+        "balance" => format!("{}", balance / one_eth())
     );
     let mut eth_addresses = Vec::new();
     for (_, e_key) in keys {
