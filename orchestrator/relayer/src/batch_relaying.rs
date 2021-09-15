@@ -11,6 +11,10 @@ use peggy_utils::types::{BatchConfirmResponse, TransactionBatch};
 use std::time::Duration;
 use tonic::transport::Channel;
 use web30::client::Web3;
+use json_logger::LOGGING;
+use slog::{info as sinfo};
+use slog::{warn as swarn};
+use slog::{error as serror};
 
 pub async fn relay_batches(
     // the validator set currently in the contract on Ethereum
@@ -46,6 +50,11 @@ pub async fn relay_batches(
                 warn!(
                     "Batch {}/{} can not be submitted yet, waiting for more signatures",
                     batch.token_contract, batch.nonce
+                );
+                swarn!(&LOGGING.logger, "BATCH_CAN_NOT_BE_SUBMITTED_YET";
+                    "function" => "relay_batches()",
+                    "token_contract" => format!("{}",batch.token_contract),
+                    "nonce" => format!("{}",batch.nonce),
                 );
             }
         } else {
@@ -103,6 +112,14 @@ pub async fn relay_batches(
                 downcast_to_u128(cost.get_total()).unwrap() as f32
                     / downcast_to_u128(one_eth()).unwrap() as f32
             );
+        sinfo!(&LOGGING.logger, "WE_HAVE_DETECTED_LATEST_BATCH";
+            "function" => "relay_batches()",
+            "latest_cosmos_batch_nonce" => format!("{}",latest_cosmos_batch_nonce),
+            "latest_ethereum_batch" => format!("{}",latest_ethereum_batch),
+            "cost_gas_price" => format!("{}",cost.gas_price.clone()),
+            "per_eth" => format!("{:.4}",downcast_to_u128(cost.get_total()).unwrap() as f32
+                / downcast_to_u128(one_eth()).unwrap() as f32),
+        );
 
         let res = send_eth_transaction_batch(
             current_valset,
@@ -117,6 +134,10 @@ pub async fn relay_batches(
         .await;
         if res.is_err() {
             info!("Batch submission failed with {:?}", res);
+            sinfo!(&LOGGING.logger, "BATCH_SUBMISSION_FAILED";
+                "function" => "relay_batches()",
+                "res" => format!("{:?}",res),
+            );
         }
     }
 }
