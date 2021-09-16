@@ -20,6 +20,6 @@ bash /peggy/tests/container-scripts/run-testnet.sh $NODES $TEST_TYPE $ALCHEMY_ID
 
 # deploy the ethereum contracts
 pushd /peggy/orchestrator/test_runner
-DEPLOY_CONTRACTS=1 RUST_BACKTRACE=full RUST_LOG=INFO PATH=$PATH:$HOME/.cargo/bin cargo run --release --bin test-runner
+DEPLOY_CONTRACTS=1 RUST_BACKTRACE=full RUST_LOG=INFO PATH=$PATH:$HOME/.cargo/bin cargo run --bin test-runner
 
 bash /peggy/tests/container-scripts/integration-tests.sh $NODES $TEST_TYPE
