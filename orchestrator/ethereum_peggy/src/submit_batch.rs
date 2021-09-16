@@ -6,6 +6,9 @@ use peggy_utils::message_signatures::encode_tx_batch_confirm_hashed;
 use peggy_utils::types::*;
 use std::{cmp::min, time::Duration};
 use web30::{client::Web3, types::TransactionRequest};
+use json_logger::LOGGING;
+use slog::{info as sinfo};
+
 
 /// this function generates an appropriate Ethereum transaction
 /// to submit the provided transaction batch
@@ -26,6 +29,9 @@ pub async fn send_eth_transaction_batch(
         "Ordering signatures and submitting TransactionBatch {}:{} to Ethereum",
         batch.token_contract, new_batch_nonce
     );
+    sinfo!(&LOGGING.logger, "ORDERING_SIGNATURES";
+        "function" => "send_eth_transaction_batch()",
+    );
     trace!("Batch {:?}", batch);
 
     let before_nonce = get_tx_batch_nonce(
@@ -41,11 +47,17 @@ pub async fn send_eth_transaction_batch(
             "Someone else updated the batch to {}, exiting early",
             before_nonce
         );
+        sinfo!(&LOGGING.logger, "SOMEONE_ELSE_UPDATED_THE_BATCH";
+            "function" => "send_eth_transaction_batch()",
+        );
         return Ok(());
     } else if current_block_height > batch.batch_timeout.into() {
         info!(
             "This batch is timed out. timeout block: {} current block: {}, exiting early",
             current_block_height, batch.batch_timeout
+        );
+        sinfo!(&LOGGING.logger, "THIS_BATCH_IS_TIMED_OUT";
+            "function" => "send_eth_transaction_batch()",
         );
         return Ok(());
     }
@@ -63,6 +75,9 @@ pub async fn send_eth_transaction_batch(
         )
         .await?;
     info!("Sent batch update with txid {:#066x}", tx);
+    sinfo!(&LOGGING.logger, "SENT_BATCH_UPDATE";
+        "function" => "send_eth_transaction_batch()",
+    );
 
     web3.wait_for_transaction(tx.clone(), timeout, None).await?;
 
@@ -80,6 +95,9 @@ pub async fn send_eth_transaction_batch(
         );
     } else {
         info!("Successfully updated Batch with new Nonce {:?}", last_nonce);
+        sinfo!(&LOGGING.logger, "SUCCESSFULLY_UPDATED_BATCH";
+            "function" => "send_eth_transaction_batch()",
+        );
     }
     Ok(())
 }

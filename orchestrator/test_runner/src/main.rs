@@ -186,7 +186,7 @@ pub async fn main() {
             return;
         }
     }
-    // info!("Starting Happy path test");
+    info!("Starting Happy path test");
     sinfo!(&LOGGING.logger, "STARTING_HAPPY_PATH_TEST";"function" => "main()");
     happy_path_test(
         &web30,
