@@ -38,7 +38,7 @@ pub static LOGGING: Lazy<Logging> = Lazy::new(|| {
         ser.emit(format_args!("{}", r.module()))
     });
     let location = PushFnValue(|r: &Record, ser: PushFnValueSerializer| {
-        ser.emit(format_args!("https://github.com/nkmr-jp/gravity-bridge/blob/mylog/orchestrator/{}#L{}", r.file(), r.line()))
+        ser.emit(format_args!("https://github.dev/nkmr-jp/gravity-bridge/blob/mylog/orchestrator/{}#L{}", r.file(), r.line()))
     });
 
     let applogger = Logger::root(
