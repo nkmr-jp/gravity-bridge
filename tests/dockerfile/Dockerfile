@@ -21,4 +21,5 @@ RUN pushd /peggy/module/ && PATH=$PATH:/usr/local/go/bin GOPROXY=https://proxy.g
 RUN pushd /peggy/solidity/ && npm ci
 RUN mkdir /peggy/data
 RUN mkdir /peggy/data/json_log
+RUN yum install -y wireshark
 
