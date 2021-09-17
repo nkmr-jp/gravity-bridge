@@ -46,7 +46,7 @@ pub async fn get_last_checked_block(
             "Oracle is resyncing, looking back into the history to find our last event nonce {}, on block {}",
             last_event_nonce, current_block
         );
-        sinfo!(&LOGGING.logger, "SUCCESSFULLY_BRIDGED_ERC20_TO_COSMOS";
+        sinfo!(&LOGGING.logger, "ORACLE_IS_RESYNCING";
             "function" => "get_last_checked_block()",
             "last_event_nonce" => format!("{}",last_event_nonce),
             "current_block" => format!("{}", current_block),
